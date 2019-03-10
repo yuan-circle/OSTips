@@ -1,0 +1,64 @@
+準備兩個大於8G的開機碟
+一個裝ubuntu的開機資料
+一個裝windows的開機資料
+windows的開機資料必須透過以下方法安裝：
+    1.最好是在windows電腦下使用（要幫它取一個名字ex.WINDOWS,之後會用到）
+    2.掛載windows.iso檔,直接複製裡面的資料到開機碟（格式化成FAT32）
+    3.先到這裡
+
+先安裝ubuntu,非常重要,裡面不能有windows作業系統(等於是要準備一個沒有作業系統的電腦),我是把ubuntu裝到1TB的HDD
+（應該可以嘗試切割一些留給之後windows存資料,不然我現在用外接硬碟,比較麻煩）
+
+安裝完成後,測試可不可以開機
+可以開機就先完成地一個作業系統!
+
+再來繼續製作windows開機碟
+    1.剛剛作到一半的windows開機碟在這裡繼續
+    2.在ubuntu Terminal 下輸入：sudo grub-install --target=i386pc --boot-directory=<開機碟在ubuntu下的位置>/boot <開機碟在硬碟分區李的位置（/dev/sd?)>
+    3.如果出現No error reported代表成功!
+    4.這時會發現windows開機碟內多了一個資料夾叫grub
+    5.進到grub,創見一個檔案叫grub.cfg,複製下面的資料到grub.cfg
+        default=1  
+        timeout=15
+        color_normal=light-cyan/dark-gray
+        menu_color_normal=black/light-cyan
+        menu_color_highlight=white/black
+         
+        menuentry "Start Windows Installation" {
+            insmod ntfs
+            insmod search_label
+            search --no-floppy --set=root --label <USB_drive_label> --hint hd0,msdos1
+            ntldr /bootmgr
+            boot
+            }
+                             
+        menuentry "Boot from the first hard drive" {
+            insmod ntfs
+            insmod chain
+            insmod part_msdos
+            insmod part_gpt
+            set root=(hd1)
+            chainloader +1
+            boot
+        }
+    6.大概是第十行的地方,看到<USB_drive_label> 這裡要刪掉改成自己開機碟的名子ex.WINDOWS
+    7.上述都完成後,開機碟插上就可以進到WINDOWS安裝界面
+    8.把WINDOWS裝到另外一個硬碟裡（我是裝在SSD)
+    9.WINDOWS安裝完後,現在就是SSD裡有WINDOWS,HDD裡有ubuntu,但是開機會直接進到WINDOWS(真霸道)
+    10.所以接下來就要在WINDOWS裡改開機檔案
+    11.進到WINDOWS界面後,按WIN+X兩個鍵,會叫出一個選單,點選裡面的"開啟PowerShell(以管理員身份)",大概是這個啦詳細的全名我忘了,然後就會開出一個藍藍的視窗
+    12.到藍藍的視窗之後,輸入這個指令：mountvol g: /s
+    13.上面指令的意思是,把裝開機檔案的資料夾叫出來並且掛載到g槽（這裡不用事先準備g槽,更準確的說,你要掛載到一個你沒有擁有的槽內(一般有C、D、E之類的,然後你就要掛在不是這三個代號)(或者說就像iso檔在掛載一樣,只是你幫它命名為g)
+    14.接著進到g槽（輸入g:)
+    15.輸入dir 可以看到有一個資料夾叫EFI,進去那個資料夾(cd EFI)
+    16.再看看裡面有哪些檔案 應該會看到ubuntu 和 windows 兩個資料夾(重點是要看到有ubuntu的資料夾)
+    17.檔案都在後,輸入下列指令：bcdedit /set "{bootmgr}" path \EFI\ubuntu\grubx64.efi
+    18.3上述指令就是更改開機鈕按下後要第一個讀取的檔案(原本是windows的bootf....efi類似的檔案,經過剛剛指令改成grubx64.efi)
+    19.重新開機,接著就會直接進到ubuntu,不用緊張windows怎半,下移部會教你
+    20.打開ubuntu Terminal,輸入下列指令：sudo update-grub
+        應該就會跑出grub抓到有windows boot manager的資料夾,這樣就成功了！
+    21.重新開機進到grub選單,就會看到有個選項是windows boot mgr 如果要進windows選那個就好！
+    完成！！！
+   
+   grub.cfg參考網站:https://www.onetransistor.eu/2014/09/make-bootable-windows-usb-from-ubuntu.html
+
