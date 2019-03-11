@@ -1,0 +1,8 @@
+
+如何同步兩個系統的時間：
+    兩行指令完成：
+        1.sudo timedatectl set-;ocal-rtc 1
+        2.timedatectl | grep local
+        如果出現：
+            RTC in local TZ: yes 代表成功
+        時區就一樣！
